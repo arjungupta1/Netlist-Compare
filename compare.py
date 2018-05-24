@@ -7,7 +7,7 @@ from openpyxl.styles import Font, Border, Side, NamedStyle
 '''
 @author Arjun Gupta
 @date 5/23/2018
-@version 1.0
+@version 1.0.1
 
 This program takes in two Allegro Netlists that have been converted to Excel format (copy and paste from .htm)
 and parses them to accurately and rapidly find all points at both the net and the pin level where there are 
@@ -27,6 +27,15 @@ To do:
     
 Overall efficiency is O(N^2) but true efficiency is θ(12N^2) or higher where N is the amount of rows in the two 
 netlists.
+
+
+Changelist:
+Version 1.0.1:
+    -Added finishing output statements to show that the program successfully uploaded the new sheets.
+    -Added more detail to what is different in Compared Net Results
+
+Version 1.0:
+    -Original commit
 '''
 
 
@@ -49,9 +58,14 @@ def main():
     if "BorderAndFont" not in wb.named_styles:
         wb.add_named_style(create_font_style())
 
+    sheet1_name = "Compared Pin Results"
+    sheet2_name = "Compared Net Results"
+
     #
-    export(file_path, diff_dict_pins, "Compared Pin Results", wb)
-    export(file_path, diff_dict_nets, "Compared Net Results", wb)
+    export(file_path, diff_dict_pins, sheet1_name, wb)
+    export(file_path, diff_dict_nets, sheet2_name, wb)
+
+    print("Export of \"{}\" and \"{}\" to \"{}\" is successful!".format(sheet1_name, sheet2_name, file_path))
 
 
 # Ensures that the user is only able to input valid files/sheets
@@ -171,6 +185,7 @@ def data_frame_to_dict(frame):
             frame_dict[net_name] = split_ref_des
     return frame_dict
 
+
 # Compares the two sheets and outputs two different dictionaries representing inconsistencies between
 # the net pins and net names
 def compare_sheets(sheet1, sheet2):
@@ -182,18 +197,22 @@ def compare_sheets(sheet1, sheet2):
 
     diff_dict_pins = {}
     diff_dict_nets = {}
-    for net_name in sheet1:
-        if net_name in sheet2:
+    for net_name1, net_name2 in zip(sheet1, sheet2):
+        if net_name1 in sheet2:
             # Create a tuple of (Sheet1CellValue, Sheet2CellValue)
             # This is used to easily show the differences between the two sheets
-            for val1, val2 in zip(sheet1[net_name], sheet2[net_name]):
-                if val1 not in sheet2[net_name]:
-                    if net_name not in diff_dict_pins:
-                        diff_dict_pins[net_name] = []
-                    diff_dict_pins[net_name].append("[ {} v {} ]".format(val1, val2))
+            for val1, val2 in zip(sheet1[net_name1], sheet2[net_name1]):
+                if val1 not in sheet2[net_name1]:
+                    if net_name1 not in diff_dict_pins:
+                        diff_dict_pins[net_name1] = []
+                    diff_dict_pins[net_name1].append("[ {} v {} ]".format(val1, val2))
         # Triggers if a net name in the first compared sheet is not in the second compared sheet
         else:
-            diff_dict_nets[net_name] = sheet1[net_name]
+            # change to make more elegant...
+            diff_dict_nets["{} not in second sheet".format(net_name1)] = sheet1[net_name1]
+            if net_name2 not in sheet1:
+                diff_dict_nets["{} not in first sheet".format(net_name2)] = sheet2[net_name2]
+
             # print("Key: {} \t Value: {}".format(net_name, diff_dict_nets[net_name]))
     return diff_dict_pins, diff_dict_nets
 
