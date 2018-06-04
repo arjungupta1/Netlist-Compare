@@ -30,6 +30,9 @@ netlists.
 
 
 Changelist:
+Version 1.0.2:
+    -Added file selection prompt that searches from available files in the Data directory
+
 Version 1.0.1:
     -Added finishing output statements to show that the program successfully uploaded the new sheets.
     -Added more detail to what is different in Compared Net Results
@@ -72,15 +75,26 @@ def main():
 def find_file():
     subdir = "Data"
     path = os.path.normpath(os.path.join(os.getcwd(), subdir))
-    files = os.listdir(path)
+    os.chdir(path)
+    files = [f for f in os.listdir(os.getcwd()) if os.path.isfile(f)]
+
     print("Current files: ")
     print("-------------------------------------------------------------")
-    for f in files:
-        # TODO: Create a file selection prompt, selecting from numbers rather than having to enter the file name
-        print(f)
+    for i in range(0, len(files)):
+        print("{}. {}".format(i+1, files[i]))
     print("-------------------------------------------------------------")
     # Need a try/catch here for above to do
-    file = input("Enter the file you want to read from: ")
+    file_num = -1
+    try:
+        file_num = int(input("Enter the number representing the file you want to read from: "))
+        if file_num > len(files) or file_num < 0:
+            file_num = -1
+            raise ValueError
+    except ValueError:
+        print("Entered number is invalid.")
+        while 0 < file_num <= len(files):
+            file_num = int(input("Enter the number representing the file you want to read from: "))
+    file = files[file_num - 1]
     data_frames = None
     prev_path = path
     # Excel file
