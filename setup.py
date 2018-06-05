@@ -8,5 +8,5 @@ setup(
     license='',
     author='agupta',
     author_email='',
-    description='', install_requires=['openpyxl', 'pandas', 'xlrd']
+    description='', install_requires=['openpyxl', 'pandas', 'xlrd', 'beautifulsoup4']
 )
